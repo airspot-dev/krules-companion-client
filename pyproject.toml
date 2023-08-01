@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "krules-companion-client"
+version = "0.2.0"
+description = "KRules Companion Client"
+authors = ["AdE <alberto@airspot.tech>"]
+readme = "README.md"
+packages = [{include = "krules_companion_client"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+typer = {extras = ["all"], version = "^0.9.0"}
+requests = "^2.31.0"
+validators = "^0.20.0"
+tomli = "^2.0.1"
+
+[tool.poetry.scripts]
+cm = "krules_companion_client.commands:main"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
