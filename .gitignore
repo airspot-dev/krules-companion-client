@@ -1,0 +1,4 @@
+dist/
+.idea/
+companion-config.toml
+__pycache__/
