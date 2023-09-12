@@ -340,7 +340,7 @@ def config(
         defaults = tomli.load(config.open("rb"))
 
     if address is not None:
-        defaults["addresss"] = address
+        defaults["address"] = address
     if subscription is not None:
         defaults["subscription"] = subscription
     if api_key is not None:

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "krules-companion-client"
-version = "0.2.0"
+version = "0.2.1"
 description = "KRules Companion Client"
 authors = ["AdE <alberto@airspot.tech>"]
 readme = "README.md"
