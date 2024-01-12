@@ -68,15 +68,32 @@ def _check_defaults():
 @app.command()
 def publish(
         group: Annotated[str, typer.Option("-g", "--group", help="Entity group", envvar="COMPANION_GROUP")],
-        entity: Annotated[str, typer.Option("-e", "--entity", help="Entity ID", envvar="COMPANION_ENTITY")],
+        entity: Annotated[str, typer.Option("-e", "--entity", help="Entity ID", envvar="COMPANION_ENTITY")] = None,
         properties: Annotated[List[dict], typer.Argument(parser=_parse_property_value,
-                                                         help="List of properties to set in form name=value, value can be a json string, '-' for stdin")],
+                                                         help="List of properties to set in form name=value, value "
+                                                              "can be a json string, '-' for stdin")] = None,
+        filter: Annotated[Optional[Tuple[str, str, str]], typer.Option("-f", "--filter",
+                                                                       help="Filter query. Eg: [col \"==\" value]")] = (
+        None, None, None),
+
         verbose: Annotated[
             bool, typer.Option("-v", "--verbose", help="Be verbose", envvar="COMPANION_VERBOSE")] = False,
         dry_run: Annotated[bool, typer.Option(help="Do not post http request", envvar="COMPANION_DRYRUN")] = False
 
 ):
     _check_defaults()
+
+    filter = _validate_filter(filter)
+    has_filter = filter is not None and sum(p is not None for p in filter) == 3
+    # if not has_filter and entity is None:
+    #     err_console.print("Entity or filter missing")
+    #     raise typer.Abort()
+    if has_filter and entity is not None:
+        err_console.print("You can specify only one from entity or filter")
+        raise typer.Abort()
+
+    if properties is None:
+        properties = []
 
     all_props = {}
     [all_props.update(p) for p in properties]
@@ -85,68 +102,26 @@ def publish(
         print({
             "group": group,
             "entity": entity,
-            "properties": all_props
-        })
-    if not dry_run:
-        response = requests.post(
-            f'{defaults["address"]}/api/v1/{defaults["subscription"]}/{group}/{entity}',
-            headers={"api-key": defaults["api_key"]},
-            json=all_props
-        )
-        response.raise_for_status()
-        if verbose:
-            print(response)
-
-
-@app.command()
-def multi(
-        group: Annotated[str, typer.Option("-g", "--group-match", help="Entity group", envvar="COMPANION_GROUP")],
-        properties: Annotated[List[dict], typer.Argument(parser=_parse_property_value,
-                                                         help="List of properties to set in form name=value, value can be a json string, '-' for stdin")],
-        filter: Annotated[Tuple[str, str, str], typer.Option("-f", "--filter",
-                                                             help="Filter query. Eg: [col \"==\" value]")] = (
-                None, None, None),
-        # json_filter: Annotated[
-        #     str, typer.Option("--json-filter", "-j", help="Complex json filter, \"-\" read form stdin")] = "{}",
-        verbose: Annotated[
-            bool, typer.Option("-v", "--verbose", help="Be verbose", envvar="COMPANION_VERBOSE")] = False,
-        dry_run: Annotated[bool, typer.Option(help="Do not post http request", envvar="COMPANION_DRYRUN")] = False,
-
-):
-    _check_defaults()
-
-    filter = _validate_filter(filter)
-
-    # if json_filter == "-":
-    #     json_filter = sys.stdin.read()
-    # try:
-    #     json_filter = json.loads(json_filter)
-    # except json.JSONDecodeError as ex:
-    #     err_console.print(ex)
-    #     raise typer.Abort()
-    # # TODO....
-    # if len(json_filter) > 0:
-    #     raise ValueError("Complex filter is not supported by the backend... yet")
-
-    all_props = {}
-    [all_props.update(p) for p in properties]
-
-    if verbose:
-        print({
-            "group": group,
             "filter": filter,
-            # "json_filter": json_filter,
-            "properties": properties,
+            "properties": all_props,
         })
     if not dry_run:
-        response = requests.post(
-            f'{defaults["address"]}/api/v1/{defaults["subscription"]}/{group}',
-            headers={"api-key": defaults["api_key"]},
-            json={
-                "data": all_props,
-                "entities_filter": filter
-            }
-        )
+
+        if entity is not None:
+            response = requests.post(
+                f'{defaults["address"]}/api/v1/{defaults["subscription"]}/{group}/{entity}',
+                headers={"api-key": defaults["api_key"]},
+                json=all_props
+            )
+        else:
+            response = requests.post(
+                f'{defaults["address"]}/api/v1/{defaults["subscription"]}/{group}',
+                headers={"api-key": defaults["api_key"]},
+                json={
+                    "data": all_props,
+                    "entities_filter": filter
+                }
+            )
         response.raise_for_status()
         if verbose:
             print(response)
@@ -165,6 +140,8 @@ def _validate_filter(filter):
         "in",
         "not-in"
     ]
+    if filter is None:
+        return filter
     lval, op, rval = filter
     if lval is not None:
         if op not in supported_operators:
@@ -241,7 +218,7 @@ def callback(
                                             envvar="COMPANION_ENTITY")] = None,
         filter: Annotated[Tuple[str, str, str], typer.Option("-f", "--filter",
                                                              help="Filter query. Eg: [col \"==\" value]")] = (
-        None, None, None),
+                None, None, None),
         when: Annotated[datetime, typer.Option("-w", "--when", help="When to call back")] = None,
         seconds: Annotated[int, typer.Option("-s", "--seconds", help="Number of seconds starting now")] = None,
         now: Annotated[bool, typer.Option("-n", "--now", help="Do it now")] = None,
@@ -251,7 +228,8 @@ def callback(
         replace_id: Annotated[str, typer.Option("-r", "--replace",
                                                 help="If present, replace previously scheduled callbacks having this id")] = None,
         rnd_delay: Annotated[int, typer.Option("-d", "--rnd-delay", help="Add some random delay between seconds")] = 0,
-        fresh: Annotated[bool, typer.Option("--fresh", help="If delayed and a group query is specified, always get fresh data before send")] = False,
+        fresh: Annotated[bool, typer.Option("--fresh",
+                                            help="If delayed and a group query is specified, always get fresh data before send")] = False,
         message: Annotated[
             str, typer.Argument(help="message returned in callback, json is supported, if '-' read from stdin")] = None,
         verbose: Annotated[
@@ -306,60 +284,60 @@ def callback(
             "message": message,
         })
 
-        if not dry_run:
-            if entity is not None:
-                response = requests.post(
-                    f'{defaults["address"]}/api/scheduler/v1/{defaults["subscription"]}/{group}/{entity}',
-                    headers={"api-key": defaults["api_key"]},
-                    json={
-                        "seconds": seconds,
-                        "now": now,
-                        "when": when,
-                        "rnd_delay": rnd_delay,
-                        "channels": channels,
-                        "replace_id": replace_id,
-                        "message": message,
-                    }
-                )
+    if not dry_run:
+        if entity is not None:
+            response = requests.post(
+                f'{defaults["address"]}/api/scheduler/v1/{defaults["subscription"]}/{group}/{entity}',
+                headers={"api-key": defaults["api_key"]},
+                json={
+                    "seconds": seconds,
+                    "now": now,
+                    "when": when,
+                    "rnd_delay": rnd_delay,
+                    "channels": channels,
+                    "replace_id": replace_id,
+                    "message": message,
+                }
+            )
+            try:
+                response.raise_for_status()
+            except HTTPError as ex:
+                err_console.print(f"status: {ex.response.status_code}")
                 try:
-                    response.raise_for_status()
-                except HTTPError as ex:
-                    err_console.print(f"status: {ex.response.status_code}")
-                    try:
-                        err_console.print(ex.response.json()["detail"])
-                    except:
-                        pass
-                    raise typer.Abort()
+                    err_console.print(ex.response.json()["detail"])
+                except:
+                    pass
+                raise typer.Abort()
 
-                if verbose:
-                    print(response, response.json())
-                return response.json().get("task_id")
-            else:
-                response = requests.post(
-                    f'{defaults["address"]}/api/scheduler/v1/{defaults["subscription"]}/{group}',
-                    headers={"api-key": defaults["api_key"]},
-                    json={
-                        "filter": filter,
-                        "seconds": seconds,
-                        "now": now,
-                        "when": when,
-                        "rnd_delay": rnd_delay,
-                        "fresh_data": fresh,
-                        "channels": channels,
-                        "message": message,
-                    }
-                )
+            if verbose:
+                print(response, response.json())
+            return response.json().get("task_id")
+        else:
+            response = requests.post(
+                f'{defaults["address"]}/api/scheduler/v1/{defaults["subscription"]}/{group}',
+                headers={"api-key": defaults["api_key"]},
+                json={
+                    "filter": filter,
+                    "seconds": seconds,
+                    "now": now,
+                    "when": when,
+                    "rnd_delay": rnd_delay,
+                    "fresh_data": fresh,
+                    "channels": channels,
+                    "message": message,
+                }
+            )
+            try:
+                response.raise_for_status()
+            except HTTPError as ex:
+                err_console.print(f"status: {ex.response.status_code}")
                 try:
-                    response.raise_for_status()
-                except HTTPError as ex:
-                    err_console.print(f"status: {ex.response.status_code}")
-                    try:
-                        err_console.print(ex.response.json()["detail"])
-                    except:
-                        pass
-                    raise typer.Abort()
-                if verbose:
-                    print(response, response.json())
+                    err_console.print(ex.response.json()["detail"])
+                except:
+                    pass
+                raise typer.Abort()
+            if verbose:
+                print(response, response.json())
 
         return None
 
@@ -376,6 +354,7 @@ def config(
                                                        help="Authentication key (override defaults)")] = None,
 ):
     global defaults
+
     if config != DEFAULT_CONFIG_FILE and not config.exists():
         err_console.print(f"config file '{config}' does not exists")
         raise typer.Abort()
