@@ -2,10 +2,10 @@ import os
 from datetime import datetime
 from typing import Sequence, Tuple, Any
 
-from krules_companion_client.commands import config, publish, callback
+from krules_companion_client.commands import config, publish, callback, delete, delete_all
 
 
-class CompanionClient(object):
+class HttpClient(object):
 
     def __init__(self, **config_kwargs):
 
@@ -48,6 +48,14 @@ class CompanionClient(object):
             publish(group, filter=filters[0], properties=[properties])
         else:
             publish(group, entity, properties=[properties])
+
+    @staticmethod
+    def delete(group: str, entity: str):
+        delete(group, entity)
+
+    @staticmethod
+    def delete_all(group: str):
+        delete_all(group, True)
 
     @staticmethod
     def callback(group: str = None, entity: str = None, filters: Sequence[Tuple[str, str, Any]] = (),
