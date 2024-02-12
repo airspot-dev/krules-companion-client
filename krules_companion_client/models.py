@@ -20,7 +20,7 @@ class EntityUpdatedEvent(BaseModel, Generic[T]):
     subscription: int
     changed_properties: Sequence[str]
     state: T
-    old_state: T
+    old_state: T | None = None
 
 
 class EntityCreatedEvent(BaseModel, Generic[T]):
