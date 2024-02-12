@@ -1,8 +1,8 @@
-import os
+import pytest
 from pathlib import Path
 
-from krules_companion_client.http import CompanionClient
-import pytest
+from krules_companion_client.http import HttpClient
+
 
 @pytest.fixture
 def configfile_path():
@@ -11,7 +11,7 @@ def configfile_path():
 
 def test_http_client_readconfigs(configfile_path):
 
-    CompanionClient(config=configfile_path)
+    HttpClient(config=configfile_path)
 
     from krules_companion_client.commands import defaults
     assert defaults.get("address") == "http://example.com"

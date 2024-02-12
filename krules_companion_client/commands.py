@@ -74,7 +74,7 @@ def publish(
                                                               "can be a json string, '-' for stdin")] = None,
         filter: Annotated[Optional[Tuple[str, str, str]], typer.Option("-f", "--filter",
                                                                        help="Filter query. Eg: [col \"==\" value]")] = (
-        None, None, None),
+                None, None, None),
 
         verbose: Annotated[
             bool, typer.Option("-v", "--verbose", help="Be verbose", envvar="COMPANION_VERBOSE")] = False,
@@ -340,6 +340,12 @@ def callback(
                 print(response, response.json())
 
         return None
+
+
+@app.command()
+def version():
+    from krules_companion_client import __version__
+    err_console.print(__version__)
 
 
 @app.callback()
