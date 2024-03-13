@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Sequence, Tuple, Any
 
 from krules_companion_client.commands import config, publish, callback, delete, delete_all
@@ -11,7 +12,7 @@ class HttpClient(object):
 
         if "config" not in config_kwargs:
             if "COMPANION_CONFIG" in os.environ:
-                config_kwargs["config"] = os.environ["COMPANION_CONFIG"]
+                config_kwargs["config"] = Path(os.environ["COMPANION_CONFIG"])
         if "address" not in config_kwargs:
             if "COMPANION_ADDRESS" in os.environ:
                 config_kwargs["address"] = os.environ["COMPANION_ADDRESS"]
