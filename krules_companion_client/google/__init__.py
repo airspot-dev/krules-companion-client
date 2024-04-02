@@ -232,8 +232,8 @@ class PubsubClient(object):
 
         if group is None:
             raise ValueError("group cannot be None")
-        if entity is None and not has_filters:
-            raise ValueError("one of entity or filters must be provided")
+        #if entity is None and not has_filters:
+        #    raise ValueError("one of entity or filters must be provided")
 
         if has_filters and len(filters) > 1:
             raise ValueError("currently, only a single filter is supported")
@@ -246,7 +246,7 @@ class PubsubClient(object):
         ext_props["subscription"] = self.subscription
         ext_props["group"] = group
 
-        if has_filters:
+        if entity is None:
             req = ScheduleCallbackMultiRequest(
                 when=when,
                 seconds=seconds,
@@ -255,7 +255,7 @@ class PubsubClient(object):
                 rnd_delay=rnd_delay,
                 fresh=fresh,
                 message=message,
-                filter=filters[0]
+                filter=has_filters and filters[0] or None
             )
             event_type = "io.krules.streams.group.v1.schedule"
             subject = f'group|{self.subscription}|{group}'

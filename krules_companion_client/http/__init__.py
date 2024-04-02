@@ -72,8 +72,8 @@ class HttpClient(object):
 
         if group is None:
             raise ValueError("group cannot be None")
-        if entity is None and not has_filters:
-            raise ValueError("one of entity or filters must be provided")
+        #if entity is None and not has_filters:
+        #    raise ValueError("one of entity or filters must be provided")
 
         if has_filters and len(filters) > 1:
             raise ValueError("currently, only a single filter is supported")
