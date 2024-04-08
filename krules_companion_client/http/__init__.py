@@ -11,8 +11,8 @@ class HttpClient(object):
     def __init__(self, **config_kwargs):
 
         if "config" not in config_kwargs:
-            if "COMPANION_CONFIG" in os.environ:
-                config_kwargs["config"] = Path(os.environ["COMPANION_CONFIG"])
+            if "COMPANION_CONFIG" in os.environ or "COMPANION_CONFIG_PATH" in os.environ:
+                config_kwargs["config"] = Path(os.environ.get("COMPANION_CONFIG", os.environ["COMPANION_CONFIG_PATH"]))
         if "address" not in config_kwargs:
             if "COMPANION_ADDRESS" in os.environ:
                 config_kwargs["address"] = os.environ["COMPANION_ADDRESS"]
