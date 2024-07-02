@@ -15,8 +15,10 @@ from typing_extensions import Annotated
 # import tomllib
 import tomli
 import validators
+from .accounts import app as accounts_app
 
 app = typer.Typer()
+app.add_typer(accounts_app, name="accounts")
 
 err_console = Console(stderr=True)
 

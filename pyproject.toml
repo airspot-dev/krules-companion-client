@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "krules-companion-client"
-version = "0.9.4"
+version = "0.9.5"
 description = "KRules Companion Client"
 authors = ["AdE <alberto@airspot.tech>"]
 readme = "README.md"
@@ -16,6 +16,7 @@ typing-extensions = "^4.8.0"
 pydantic = "^2.5.3"
 cloudevents = {version="^1.10.1", optional = true}
 google-cloud-pubsub = {version="^2.13.11", optional = true}
+firebase-admin = "^6.5.0"
 
 [tool.poetry.extras]
 google=["google-cloud-pubsub", "cloudevents"]
