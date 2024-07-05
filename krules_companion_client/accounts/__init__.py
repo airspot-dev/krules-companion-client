@@ -29,7 +29,8 @@ def generate_password():
 def create(
         email: Annotated[str, typer.Argument(help="user email")],
         subscription: Annotated[List[str], typer.Option(
-            "-s", "--subscription", help="User subscription (can be more than one)", envvar="COMPANION_SUBSCRIPTION")] = [],
+            "-s", "--subscription", help="User subscription (can be more than one)", envvar="COMPANION_SUBSCRIPTION")
+        ] = (),
         password: Annotated[
             str, typer.Option(
                 "-p", "--password", help="User password. If not specified a random one will be created")] = "",
@@ -42,7 +43,10 @@ def create(
                 envvar="GOOGLE_CLOUD_PROJECT")] = "",
 ):
     if service_account:
-        firebase_admin.initialize_app(credentials.Certificate(service_account))
+        options = None
+        if project:
+            options = {"projectId": project}
+        firebase_admin.initialize_app(credentials.Certificate(service_account), options=options)
     else:
         if project:
             firebase_admin.initialize_app(options={"projectId": project})
