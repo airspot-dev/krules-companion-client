@@ -113,6 +113,8 @@ class PubsubClient(object):
             properties = {}
         properties.update(properties_kwargs)
 
+        properties["_last_update"] = f"dt|{datetime.now().isoformat()}"
+
         event_type: str | None = None
         subject: str | None = None
         payload: dict = {}
