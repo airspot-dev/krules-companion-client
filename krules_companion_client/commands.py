@@ -100,6 +100,9 @@ def publish(
     all_props = {}
     [all_props.update(p) for p in properties]
 
+    if "_last_update" not in all_props:
+        all_props["_last_update"] = f"dt|{datetime.now().isoformat()}"
+
     if verbose:
         print({
             "group": group,

@@ -3,3 +3,4 @@ dist/
 companion-config.toml
 __pycache__/
 client/
+.envrc
