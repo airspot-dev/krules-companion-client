@@ -114,7 +114,7 @@ class PubsubClient(object):
         properties.update(properties_kwargs)
 
         if "_last_update" not in properties:
-            properties["_last_update"] = f"dt|{datetime.now().isoformat()}"
+            properties["_last_update"] = f"dt|{datetime.utcnow().isoformat()}"
 
         event_type: str | None = None
         subject: str | None = None
